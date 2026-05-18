@@ -7,12 +7,25 @@ Create Date: 2026-05-18 00:00:00
 from __future__ import annotations
 
 from collections.abc import Sequence
+from urllib.parse import urlparse
 
 import sqlalchemy as sa
 from alembic import op
 from pgvector.sqlalchemy import Vector
 
 from mcp_server.core.config import settings
+
+
+def _db_name() -> str:
+    """Extract just the database name from DATABASE_URL.
+
+    `urllib.parse.urlparse` cleanly drops the scheme, credentials, host, and
+    query string; we only want the path component. The previous version used
+    `rsplit('/', 1)[-1]` which silently included any `?sslmode=require`-style
+    query suffix, producing invalid GRANT statements when the DSN had params.
+    """
+    path = urlparse(settings.database_url).path
+    return path.lstrip("/").split("?", 1)[0]
 
 revision: str = "0001_initial"
 down_revision: str | None = None
@@ -82,7 +95,7 @@ def upgrade() -> None:
     )
 
     # Grant SELECT-only on these tables; the role has no INSERT/UPDATE/DELETE/DDL by default.
-    op.execute(f"GRANT CONNECT ON DATABASE {settings.database_url.rsplit('/', 1)[-1]} TO {settings.readonly_user}")
+    op.execute(f"GRANT CONNECT ON DATABASE {_db_name()} TO {settings.readonly_user}")
     op.execute(f"GRANT USAGE ON SCHEMA public TO {settings.readonly_user}")
     op.execute(f"GRANT SELECT ON ALL TABLES IN SCHEMA public TO {settings.readonly_user}")
     op.execute(
