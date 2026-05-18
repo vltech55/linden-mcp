@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "portfolio-mcp": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "/ABSOLUTE/PATH/TO/03-mcp-server/docker-compose.yml",
+        "exec",
+        "-T",
+        "mcp-http",
+        "python",
+        "-m",
+        "mcp_server.server"
+      ],
+      "env": {}
+    }
+  }
+}
