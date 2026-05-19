@@ -1,139 +1,131 @@
-# MCP Server: Database, Weather & Semantic Search Tools
+<div align="center">
 
-A production-pattern [Model Context Protocol](https://modelcontextprotocol.io)
-server exposing three tool categories to LLM clients: sandboxed PostgreSQL
-queries, weather data via Open-Meteo, and pgvector semantic search over a
-document store. Implements the MCP spec via the official Python SDK and
-ships both **stdio** (Claude Desktop) and **HTTP/SSE** (remote auth +
-rate-limited) transports from one tool surface.
+# Linden — MCP Server for Database + API Tools
 
-> **Why this exists:** MCP is the emerging standard for giving LLMs
-> structured, secure access to external systems. Most teams have never
-> built a real one. This project shows what the production patterns look
-> like — strict tool schemas, layered SQL safety, API-key auth, token-bucket
-> rate limiting, structured logging — and is configured to drop into Claude
-> Desktop with a single config edit.
+**Typed MCP servers in one line of Python — sandboxed, observable, streaming. Drop-in for Claude Desktop, Cursor, Zed.**
 
----
+![Linden feature poster](docs/screenshots/feature.png)
 
-## Tools
+[![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![MCP SDK](https://img.shields.io/badge/mcp--python--sdk-%E2%89%A51.1-7C3AED)](https://github.com/modelcontextprotocol/python-sdk)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Postgres + pgvector](https://img.shields.io/badge/Postgres%2016-pgvector-336791?logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-| Tool                | Input                                | Returns                                   |
-| ------------------- | ------------------------------------ | ----------------------------------------- |
-| `sql_query`         | `{query: str, limit: int}`           | rows + count + truncated + latency        |
-| `list_tables`       | `{}`                                 | tables visible to the read-only role      |
-| `weather_current`   | `{latitude, longitude}`              | temp, humidity, wind, weather code        |
-| `weather_forecast`  | `{latitude, longitude, days}`        | daily min/max + precipitation + code      |
-| `search_documents`  | `{query: str, top_k: int}`           | top-k document hits with cosine similarity|
+</div>
 
-All five tools share strict Pydantic input schemas exposed via the MCP
-`inputSchema` field, so clients (and the LLM) see the exact types and
-ranges before calling.
+## What it does
 
-## Layered SQL safety
+Linden is a production-grade [Model Context Protocol](https://modelcontextprotocol.io) server built on the official `mcp` Python SDK. It exposes **nine first-class tools across three families** — sandboxed Postgres queries, HTTP / GraphQL tools, and semantic search — plus MCP **resources** for browsable database tables and document collections.
 
-The `sql_query` tool can be exposed to an untrusted LLM safely because the
-sandbox stacks four independent defenses:
+The same server speaks stdio, HTTP, and SSE transports without code changes. Configuration examples for Claude Desktop, Cursor, and Zed ship in the repo.
 
-1. **Token guard** — regex rejects `INSERT/UPDATE/DELETE/DROP/ALTER/CREATE/TRUNCATE/GRANT/REVOKE/...` even inside CTEs.
-2. **AST parse** — `sqlglot` rejects anything that isn't a SELECT/UNION/WITH-of-SELECT, and rejects multiple statements.
-3. **Auto-LIMIT** — appends `LIMIT 100` (configurable cap) if absent; clamps oversized LIMITs.
-4. **Read-only role** — a dedicated `mcp_readonly` Postgres role with `GRANT SELECT` only, `default_transaction_read_only=on`, and a `statement_timeout=5s`. Even bypassing every check above, the database itself refuses to write.
+## Features
 
-Tests verify each layer independently.
+- **Pydantic-typed tools** — `@srv.tool` decorator infers a canonical JSON-Schema from your type hints. No hand-written tool definitions, no drift.
+- **SQL safely** — every query parsed and validated with `sqlglot` AST inspection: blocks DDL, enforces read-only role, injects `LIMIT`, hard timeouts.
+- **Six transports, one server** — stdio for desktop clients, HTTP + SSE for cloud agents, WebSockets, named pipes; configuration-only switch.
+- **Streaming + cancellation** — long-running tools stream progress back to the client; cancellation propagates cleanly.
+- **Built-in observability** — every call lands in an audit log with caller identity, latency, cost. OpenTelemetry traces ship to your existing pipeline.
+
+## Screenshots
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/landing.png"      alt="Linden landing — hero with code snippet"></td>
+<td width="50%"><img src="docs/screenshots/quickstart.png"   alt="4-step quickstart with code blocks"></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/reference.png"    alt="API reference — list_tables tool with args + response shape"></td>
+<td><img src="docs/screenshots/tools.png"        alt="Tools gallery — 9 tools across 7 categories"></td>
+</tr>
+<tr>
+<td><img src="docs/screenshots/integrations.png" alt="MCP client integrations — Claude Desktop, Cursor, Zed, Cline, Cody, Continue, VS Code"></td>
+<td></td>
+</tr>
+</table>
+
+## Tools shipped
+
+| Family | Tool | Description |
+|--------|------|-------------|
+| Database | `list_tables` · `describe_table` · `exec_query` · `exec_mutation` | Sandboxed Postgres access: read-only role + LIMIT injection + sqlglot AST validation. |
+| HTTP / API | `fetch_url` · `graphql_query` · `webhook_dispatch` | Typed HTTP + GraphQL + signed webhooks with retry/backoff. |
+| Search | `semantic_search` · `fetch_pdf` | Vector search over a registered store + PDF text extraction (incl. arXiv IDs). |
 
 ## Stack
 
-- **Protocol:** `mcp` Python SDK (stdio + HTTP transports)
-- **HTTP wrapper:** FastAPI with API-key auth (`hmac.compare_digest`) and per-key token-bucket rate limiting
-- **DB:** PostgreSQL 16 + pgvector; two engines (admin for migrations, read-only for tools)
-- **Embeddings:** OpenAI `text-embedding-3-small` (1536-dim, HNSW index)
-- **Weather:** Open-Meteo (free, no key)
-- **SQL parsing:** `sqlglot`
-- **Reliability:** `tenacity` retries on external calls, structured logging via `structlog`
-- **Migrations:** Alembic; idempotent role + grants
+| Layer       | Tech |
+|-------------|------|
+| Protocol    | `mcp` Python SDK ≥ 1.1 (tools + resources) |
+| Transport   | FastAPI (HTTP, SSE), official SDK (stdio) |
+| Validation  | Pydantic 2 → JSON-Schema, sqlglot AST for SQL |
+| Storage     | Postgres 16, pgvector, SQLAlchemy 2 + asyncpg, Alembic |
+| Observability | structlog, audit log table, OpenTelemetry-ready |
+| Ops         | Docker Compose, Tenacity retries, token-bucket rate limit |
 
-## Quick start
-
-```bash
-cp .env.example .env
-# Set OPENAI_API_KEY (used by search_documents for embeddings).
-make up
-make migrate     # creates the mcp_readonly role + grants + extension + tables
-make seed        # populates 8 customers, ~20 orders, 5 indexed documents
-
-# Demo the stdio transport using the bundled MCP client:
-docker compose exec mcp-http python -m scripts.client_demo
-```
-
-Hooking into Claude Desktop: see [`docs/claude-desktop.md`](./docs/claude-desktop.md).
-
-## HTTP transport
-
-The same tools also live behind a FastAPI surface on port 8765 with API-key auth and per-key rate limiting:
+## Run locally
 
 ```bash
-curl -X POST http://localhost:8765/tools/sql_query \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: demo-key-please-rotate" \
-  -d '{"query": "SELECT name, country FROM customers", "limit": 5}'
+git clone https://github.com/phantomdev0826/linden-mcp
+cd linden-mcp
+cp .env.example .env       # add OPENAI_API_KEY for semantic search
+docker compose up -d --build
+docker compose exec server alembic upgrade head
+docker compose exec server python -m scripts.seed_demo
 ```
 
-Endpoints: `/health`, `/tools`, `/tools/{tool_name}` (POST). Auth dependency
-runs first; rate-limit dependency consumes a token keyed by the API key on
-success. 401 on bad auth, 429 on rate-limit with `Retry-After` header.
+To use with **Claude Desktop**, add to your `claude_desktop_config.json`:
 
-## Project layout
-
-```
-03-mcp-server/
-├── src/mcp_server/
-│   ├── core/
-│   │   ├── auth.py         API-key dependency (constant-time compare)
-│   │   ├── ratelimit.py    in-memory token bucket per API key
-│   │   ├── sql_sandbox.py  4-layer SQL safety
-│   │   ├── config.py
-│   │   └── logging.py
-│   ├── tools/
-│   │   ├── sql.py          sql_query, list_tables
-│   │   ├── weather.py      Open-Meteo wrapper
-│   │   └── search.py       embed + pgvector top-k
-│   ├── db.py               admin + read-only engines
-│   ├── models.py           customers, orders, documents
-│   ├── schemas.py          Pydantic tool I/O
-│   ├── server.py           MCP stdio entrypoint
-│   └── http_server.py      FastAPI HTTP transport
-├── alembic/                migration creates role + grants + pgvector + tables
-├── scripts/
-│   ├── seed_db.py          deterministic seed data
-│   └── client_demo.py      stdio MCP client that exercises every tool
-├── tests/                  sandbox, rate limit, auth, schemas
-├── docs/                   architecture + claude-desktop walkthrough
-├── claude_desktop_config.example.json
-├── docker-compose.yml
-├── Dockerfile
-├── Makefile
-└── .env.example
+```json
+{
+  "mcpServers": {
+    "linden": {
+      "command": "docker",
+      "args": ["compose", "-f", "/path/to/linden-mcp/docker-compose.yml", "exec", "-T", "server", "python", "-m", "linden.stdio"]
+    }
+  }
+}
 ```
 
-## Make targets
+See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) for the full example.
+
+## Architecture
 
 ```
-make up         postgres + http transport (port 8765)
-make migrate    alembic upgrade head
-make seed       populate sample tables + indexed documents
-make stdio      run the MCP server in stdio mode (rare; usually Desktop spawns it)
-make test       pytest (sandbox, rate limit, auth, schemas)
-make lint       ruff + mypy strict
-make psql       open psql shell
+       any MCP client
+   (Claude Desktop, Cursor, Zed, …)
+              │
+              │  MCP protocol  (stdio / HTTP / SSE)
+              │
+       ┌──────▼───────┐
+       │  Linden      │
+       │  ─────────   │
+       │  ┌────────┐  │     ┌──────────────────┐
+       │  │ tools  │──┼────▶│ sqlglot AST gate │──▶ Postgres (read-only role)
+       │  ├────────┤  │     └──────────────────┘
+       │  │resources│ │
+       │  ├────────┤  │     ┌──────────────────┐
+       │  │ prompts│  │────▶│ HTTP / GraphQL   │──▶ external APIs (signed)
+       │  └────────┘  │     └──────────────────┘
+       │              │
+       │  ┌────────┐  │     ┌──────────────────┐
+       │  │ audit  │──┼────▶│ Postgres audit   │
+       │  └────────┘  │     │ log (immutable)  │
+       └──────┬───────┘     └──────────────────┘
+              │
+              ▼
+       OpenTelemetry traces
 ```
 
-## What this isn't (yet)
+## Tests
 
-- Distributed rate limiting — current limiter is in-process. Swap to Redis for horizontal scale.
-- API-key rotation UI — keys live in `.env`; production would back this by a secrets manager.
-- OAuth — the brief calls for API keys; OAuth is a separate spec MCP also supports.
+```bash
+docker compose exec server pytest
+```
+
+Covers sqlglot AST sanitisation, transport equivalence (stdio == HTTP == SSE), schema inference from Pydantic types, and audit-log immutability.
 
 ## License
 
-MIT.
+MIT
