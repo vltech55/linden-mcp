@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linden — Typed MCP servers in one line of Python</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%23ec4899'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><path d='M9 11 L13 7 V14 H9 Z M14 7 L18 11 V14 H14 Z M19 7 L23 11 V14 H19 Z M9 16 H23 V20 H9 Z M9 22 H18 V25 H9 Z' fill='white' opacity='0.95'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --panel: #fafaf9; --panel-2: #f5f5f4;
+  --ink: #0c0a09; --ink-2: #292524; --muted: #57534e; --subtle: #a8a29e;
+  --border: #e7e5e4; --border-strong: #d6d3d1;
+  --accent: #7c3aed; --pink: #db2777; --accent-soft: #f5f3ff;
+  --emerald: #059669;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -0.011em; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+a { color: inherit; text-decoration: none; }
+
+/* Nav */
+.topnav { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.topnav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; }
+.brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.tn-link { color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 0; cursor: pointer; }
+.tn-link:hover { color: var(--accent); }
+.tn-link.active { color: var(--accent); }
+.gh { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.btn-primary { background: var(--ink); color: white; padding: 7px 15px; border-radius: 7px; font-weight: 500; font-size: 13.5px; cursor: pointer; border: 1px solid var(--ink); }
+
+/* Hero */
+.hero { max-width: 1280px; margin: 0 auto; padding: 80px 32px 64px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; font-size: 12px; font-weight: 600; margin-bottom: 22px; border: 1px solid #ddd6fe; }
+.eyebrow .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+.h1 { font-size: 64px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; max-width: 920px; }
+.h1 .grad {
+  background: linear-gradient(90deg, #7c3aed, #db2777 70%, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.lede { font-size: 20px; color: var(--muted); margin-top: 22px; max-width: 660px; line-height: 1.55; font-weight: 400; }
+.cta-row { margin-top: 32px; display: flex; gap: 12px; align-items: center; }
+.cta-primary { background: var(--ink); color: white; padding: 12px 22px; border-radius: 9px; font-size: 15px; font-weight: 500; border: 1px solid var(--ink); cursor: pointer; }
+.cta-second { padding: 12px 18px; border-radius: 9px; font-size: 15px; font-weight: 500; color: var(--ink-2); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.cta-pill { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px 6px 6px 14px; display: inline-flex; align-items: center; gap: 12px; }
+.cta-pill .cmd { font-family: 'JetBrains Mono'; font-size: 13.5px; color: var(--ink-2); }
+.cta-pill .copy { background: var(--ink); color: white; padding: 3px 11px; border-radius: 999px; font-size: 12px; cursor: pointer; }
+
+/* Code hero */
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
+.code-block { background: #1a1721; color: #f5f3ff; border-radius: 14px; padding: 22px 26px; font-family: 'JetBrains Mono'; font-size: 13.5px; line-height: 1.75; box-shadow: 0 30px 60px -20px rgba(124,58,237,0.25), 0 14px 40px -14px rgba(0,0,0,0.4); border: 1px solid rgba(245, 243, 255, 0.08); position: relative; overflow: hidden; }
+.code-block::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 32px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.code-block::after { content: '•  •  •'; position: absolute; top: 8px; left: 16px; color: #4c1d95; letter-spacing: 4px; font-size: 11px; }
+.code-block .filename { position: absolute; top: 8px; right: 16px; font-size: 11px; color: #a78bfa; opacity: 0.8; }
+.code-block pre { margin-top: 18px; white-space: pre; overflow-x: auto; }
+.k { color: #c4b5fd; } .s { color: #fda4af; } .d { color: #7dd3fc; } .c { color: #6b7280; font-style: italic; } .n { color: #f5f3ff; } .f { color: #fcd34d; } .b { color: #c4b5fd; font-weight: 500; }
+
+/* Social proof / brand row */
+.brand-row { background: var(--panel); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 28px 32px; }
+.brand-row-inner { max-width: 1280px; margin: 0 auto; }
+.brand-row-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); font-weight: 600; text-align: center; margin-bottom: 22px; }
+.brand-row-logos { display: flex; align-items: center; justify-content: space-between; gap: 36px; opacity: 0.7; }
+.brand-row-logos span { font-size: 18px; font-weight: 700; color: var(--ink-2); letter-spacing: -0.01em; }
+.brand-row-logos span.serif { font-family: ui-serif, Georgia, serif; font-style: italic; }
+.brand-row-logos span.mono { font-family: 'JetBrains Mono'; }
+.brand-row-logos span.tight { letter-spacing: -0.05em; }
+
+/* Why grid */
+.why { max-width: 1280px; margin: 0 auto; padding: 80px 32px; }
+.why-h { text-align: center; max-width: 720px; margin: 0 auto 44px; }
+.why-eyebrow { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+.why-h h2 { font-size: 42px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.why-card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 26px 28px; position: relative; }
+.why-card .icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.why-card .icon.violet { background: var(--accent-soft); color: var(--accent); }
+.why-card .icon.pink { background: #fdf2f8; color: #db2777; }
+.why-card .icon.amber { background: #fef3c7; color: #b45309; }
+.why-card .icon.emerald { background: #ecfdf5; color: var(--emerald); }
+.why-card .icon.cyan { background: #ecfeff; color: #0891b2; }
+.why-card .icon.rose { background: #ffe4e6; color: #be123c; }
+.why-card h3 { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 6px; }
+.why-card p { font-size: 14px; color: var(--muted); line-height: 1.55; }
+
+/* Compare strip */
+.compare { background: var(--ink); color: white; padding: 70px 32px; }
+.compare-inner { max-width: 1100px; margin: 0 auto; }
+.compare h2 { font-size: 36px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; text-align: center; max-width: 720px; margin: 0 auto 8px; }
+.compare-sub { text-align: center; color: rgba(255,255,255,0.6); font-size: 16px; max-width: 580px; margin: 0 auto 36px; }
+.split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.split2-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 22px 26px; }
+.split2-card.linden { background: linear-gradient(135deg, rgba(124,58,237,0.16) 0%, rgba(219,39,119,0.10) 100%); border-color: rgba(124,58,237,0.4); }
+.split2-card .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-bottom: 14px; }
+.split2-card.them .badge { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+.split2-card.linden .badge { background: rgba(124,58,237,0.35); color: #ddd6fe; }
+.split2-card ul { list-style: none; padding: 0; margin: 12px 0 0; }
+.split2-card li { display: flex; gap: 10px; padding: 7px 0; font-size: 14px; color: rgba(255,255,255,0.82); }
+.split2-card li .ico { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.split2-card.them li .ico { color: rgba(255,255,255,0.4); }
+.split2-card.linden li .ico { color: #86efac; }
+.split2-card h4 { font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 5 L6 3 V7 H4 Z M7 3 L9 5 V7 H7 Z M10 3 L12 5 V7 H10 Z M4 8 H12 V11 H4 Z M4 12 H10 V14 H4 Z"/></svg>
+      </div>
+      <div class="brand-name">Linden</div>
+    </div>
+    <a class="tn-link active">Product</a>
+    <a class="tn-link" href="quickstart.html">Quickstart</a>
+    <a class="tn-link" href="index.html">API Reference</a>
+    <a class="tn-link" href="tools.html">Tools</a>
+    <a class="tn-link" href="integrations.html">Integrations</a>
+    <a class="tn-link">Pricing</a>
+    <div style="flex:1"></div>
+    <span class="gh"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 00-2.5 15.6c.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.6 7.6 0 014 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3.1-1.8 3.7-3.6 4 .3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 008 0"/></svg> 1.2k</span>
+    <button class="btn-primary">Install</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span>v1.2.0 · 6 transports · 38 tools</span>
+      <h1 class="h1">Typed <span class="grad">MCP servers</span> in one line of Python.</h1>
+      <p class="lede">Point Linden at any data source — Postgres, S3, GitHub, your internal API — and expose it as a sandboxed, schema-validated tool that Claude, Cursor, Zed and any MCP client can pick up. Drop in three lines, no boilerplate.</p>
+      <div class="cta-row">
+        <button class="cta-primary">Install · 30s</button>
+        <span class="cta-pill">
+          <span class="cmd">pip install linden-mcp</span>
+          <span class="copy">Copy</span>
+        </span>
+      </div>
+    </div>
+    <div class="code-block">
+      <span class="filename">customer_support_server.py</span>
+<pre><span class="k">from</span> <span class="d">linden</span> <span class="k">import</span> <span class="d">Server</span>, <span class="d">tool</span>
+
+<span class="c"># 1. Spin up a server</span>
+<span class="b">srv</span> = <span class="d">Server</span>(<span class="s">"customer-support"</span>)
+
+<span class="c"># 2. Decorate a function. Linden infers</span>
+<span class="c">#    the JSON schema from your type hints.</span>
+<span class="k">@srv</span><span class="d">.tool</span>(<span class="s">"refund_order"</span>, scopes=[<span class="s">"orders:write"</span>])
+<span class="k">async def</span> <span class="f">refund</span>(<span class="n">order_id</span>: <span class="d">str</span>,
+                 <span class="n">amount_cents</span>: <span class="d">int</span>,
+                 <span class="n">reason</span>: <span class="d">str</span> | <span class="d">None</span> = <span class="d">None</span>) -&gt; <span class="d">str</span>:
+    <span class="s">"""Issue a partial or full refund. Returns the
+    refund_id."""</span>
+    <span class="k">return await</span> stripe.<span class="f">refund</span>(order_id, amount_cents)
+
+<span class="c"># 3. That's it. Mounted at /mcp · ready for Claude.</span>
+<span class="b">srv</span><span class="d">.serve</span>(host=<span class="s">"0.0.0.0"</span>, port=<span class="d">7233</span>)</pre>
+    </div>
+  </div>
+</section>
+
+<section class="brand-row">
+  <div class="brand-row-inner">
+    <div class="brand-row-label">trusted by ai teams shipping mcp in production</div>
+    <div class="brand-row-logos">
+      <span class="tight">Orbital</span>
+      <span class="serif">Cardinal Research</span>
+      <span>Globex Health</span>
+      <span class="mono">parker.dev</span>
+      <span class="tight">Lumen Ops</span>
+      <span>Fields AI</span>
+      <span class="mono">acme.example</span>
+    </div>
+  </div>
+</section>
+
+<section class="why">
+  <div class="why-h">
+    <div class="why-eyebrow">why teams pick linden</div>
+    <h2>The boring parts of MCP — done correctly, by default.</h2>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="icon violet"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4 L8 1 L14 4 V12 L8 15 L2 12 Z M8 1 V15 M2 4 L8 7 L14 4"/></svg></div>
+      <h3>Schema-validated I/O</h3>
+      <p>Pydantic-typed args and returns become canonical JSON-Schema tool definitions — the same shape Claude expects, automatically.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon pink"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 4 L13 4 V10 H3 Z M3 12 H13 M5 14 H11 M5 14 V12 M11 14 V12"/></svg></div>
+      <h3>Sandboxed execution</h3>
+      <p>Per-call CPU & memory caps, network scopes, secrets injection via short-lived OIDC. Subprocess crashes can't take down the server.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon amber"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M5 8 L7 10 L11 6"/></svg></div>
+      <h3>Built-in observability</h3>
+      <p>Every call lands in an audit log with caller identity, latency, cost. OpenTelemetry traces ship to your existing pipeline.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon emerald"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 8 L6 12 L14 4"/></svg></div>
+      <h3>Streaming responses</h3>
+      <p>Long-running tools stream progress events back to the client. No more 10-minute hangs while a database query runs.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon cyan"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4 H8 L10 6 H14 V13 H2 Z"/></svg></div>
+      <h3>Resources, not just tools</h3>
+      <p>Expose static documents and live datasets through the MCP resource protocol — agents can <em>browse</em> in addition to call.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon rose"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="8" r="2.5"/><circle cx="11" cy="8" r="2.5"/><path d="M7.5 8 H8.5"/></svg></div>
+      <h3>Any transport</h3>
+      <p>stdio, HTTP, SSE, WebSockets, named pipes. Same Python server, configurable per deployment — local CLI to enterprise mesh.</p>
+    </div>
+  </div>
+</section>
+
+<section class="compare">
+  <div class="compare-inner">
+    <h2>Linden vs. <em>rolling your own MCP server</em></h2>
+    <p class="compare-sub">The wins compound — auth, sandboxing, observability and streaming each take weeks to get right.</p>
+    <div class="split2">
+      <div class="split2-card them">
+        <span class="badge">DIY MCP server</span>
+        <h4>Pre-Linden</h4>
+        <ul>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L13 13 M13 3 L3 13"/></svg>~400 lines of FastAPI/WebSocket plumbing per server.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L13 13 M13 3 L3 13"/></svg>Hand-write the JSON schema for every tool. It drifts.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L13 13 M13 3 L3 13"/></svg>Subprocess crashes take down the entire process.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L13 13 M13 3 L3 13"/></svg>No audit log — you'll write it in a sprint nobody asked for.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3 L13 13 M13 3 L3 13"/></svg>Streaming hand-rolled with framing bugs nobody can repro.</li>
+        </ul>
+      </div>
+      <div class="split2-card linden">
+        <span class="badge">⚡ Linden</span>
+        <h4>One line. Typed. Sandboxed.</h4>
+        <ul>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L7 12 L13 4"/></svg>One <span class="mono" style="color:#fcd34d">@srv.tool</span> decorator. Schema inferred from types.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L7 12 L13 4"/></svg>Sandbox per call — CPU, memory, network scopes enforced.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L7 12 L13 4"/></svg>Audit log + OpenTelemetry traces enabled by default.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L7 12 L13 4"/></svg>Streams progress, partial results, cancellation — all in protocol.</li>
+          <li><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L7 12 L13 4"/></svg>6 transports, same code path. Local-to-prod with config only.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

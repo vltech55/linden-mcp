@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tools — Linden</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%23ec4899'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --panel: #fafaf9; --panel-2: #f5f5f4;
+  --ink: #0c0a09; --ink-2: #292524; --muted: #57534e; --subtle: #a8a29e;
+  --border: #e7e5e4; --border-strong: #d6d3d1;
+  --accent: #7c3aed; --pink: #db2777; --accent-soft: #f5f3ff;
+  --emerald: #059669;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -0.011em; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; }
+a { color: inherit; text-decoration: none; }
+
+.topnav { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.topnav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; }
+.brand-name { font-size: 16px; font-weight: 600; }
+.tn-link { color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 0; cursor: pointer; }
+.tn-link:hover { color: var(--accent); }
+.tn-link.active { color: var(--accent); }
+.gh { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--ink-2); }
+.btn-primary { background: var(--ink); color: white; padding: 7px 15px; border-radius: 7px; font-weight: 500; font-size: 13.5px; cursor: pointer; border: 1px solid var(--ink); }
+
+.page { max-width: 1280px; margin: 0 auto; padding: 48px 32px; }
+.head { margin-bottom: 32px; }
+.h1 { font-size: 38px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+.sub { font-size: 16px; color: var(--muted); margin-top: 10px; max-width: 700px; line-height: 1.5; }
+
+.search-row { display: flex; align-items: center; gap: 12px; margin: 28px 0 20px; }
+.search-box { flex: 1; max-width: 520px; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; padding: 9px 14px; }
+.search-box .q { flex: 1; font-size: 14px; color: var(--subtle); }
+.search-box .kbd { padding: 1px 6px; border: 1px solid var(--border-strong); border-radius: 4px; font-size: 10px; background: white; color: var(--subtle); font-family: 'JetBrains Mono'; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; border: 1px solid var(--border); cursor: pointer; background: white; color: var(--ink-2); }
+.chip.active { background: var(--accent-soft); color: var(--accent); border-color: #ddd6fe; font-weight: 500; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.tile { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px 22px 18px; transition: border-color 100ms; cursor: pointer; }
+.tile:hover { border-color: var(--accent); }
+.tile-h { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.tile-ico { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; }
+.ico-db { background: #f5f3ff; color: var(--accent); }
+.ico-fs { background: #fef3c7; color: #b45309; }
+.ico-api { background: #ecfdf5; color: var(--emerald); }
+.ico-msg { background: #fdf2f8; color: var(--pink); }
+.ico-vcs { background: #e0f2fe; color: #0369a1; }
+.ico-search { background: #ffe4e6; color: #be123c; }
+.ico-mail { background: #ecfeff; color: #0891b2; }
+.tile-meta { flex: 1; min-width: 0; }
+.tile-name { font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
+.tile-name code { font-family: 'JetBrains Mono'; font-size: 13.5px; background: var(--panel-2); padding: 1px 6px; border-radius: 4px; color: var(--ink-2); font-weight: 500; }
+.tile-namespace { font-size: 12px; color: var(--subtle); font-family: 'JetBrains Mono'; margin-top: 2px; }
+.tile-tags { margin-left: auto; display: flex; gap: 4px; flex-shrink: 0; }
+.tag { font-size: 10.5px; padding: 1px 6px; border-radius: 4px; font-weight: 500; font-family: 'JetBrains Mono'; }
+.tag.read { background: var(--accent-soft); color: var(--accent); }
+.tag.write { background: #fef3c7; color: #b45309; }
+.tag.dangerous { background: #fee2e2; color: #be123c; }
+.tile p { font-size: 13.5px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+.tile-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 11.5px; color: var(--subtle); font-family: 'JetBrains Mono'; }
+.tile-footer .args { color: var(--ink-2); }
+.tile-footer .arrow { color: var(--accent); }
+
+.cat-h { font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--subtle); font-weight: 600; margin: 32px 0 12px; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-logo"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 5 L6 3 V7 H4 Z M7 3 L9 5 V7 H7 Z M10 3 L12 5 V7 H10 Z M4 8 H12 V11 H4 Z M4 12 H10 V14 H4 Z"/></svg></div>
+      <div class="brand-name">Linden</div>
+    </div>
+    <a class="tn-link" href="landing.html">Product</a>
+    <a class="tn-link" href="quickstart.html">Quickstart</a>
+    <a class="tn-link" href="index.html">API Reference</a>
+    <a class="tn-link active">Tools</a>
+    <a class="tn-link" href="integrations.html">Integrations</a>
+    <div style="flex:1"></div>
+    <span class="gh"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 00-2.5 15.6c.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.6 7.6 0 014 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3.1-1.8 3.7-3.6 4 .3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 008 0"/></svg> 1.2k</span>
+    <button class="btn-primary">Install</button>
+  </div>
+</nav>
+
+<section class="page">
+  <div class="head">
+    <div class="h1">Tools gallery</div>
+    <div class="sub">38 tools across 7 categories. Drop one into <code class="mono" style="background: var(--panel-2); padding: 1px 6px; border-radius: 4px;">@srv.mount</code> or fork any of them as a starting template. All are MIT-licensed.</div>
+  </div>
+
+  <div class="search-row">
+    <div class="search-box">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11 L14 14"/></svg>
+      <span class="q">Find a tool by name, namespace, or category</span>
+      <span class="kbd">⌘K</span>
+    </div>
+    <span class="chip active">All · 38</span>
+    <span class="chip">Database · 9</span>
+    <span class="chip">Filesystem · 5</span>
+    <span class="chip">HTTP / API · 8</span>
+    <span class="chip">Messaging · 6</span>
+    <span class="chip">VCS · 4</span>
+    <span class="chip">Search · 3</span>
+    <span class="chip">Mail · 3</span>
+  </div>
+
+  <div class="cat-h">Database</div>
+  <div class="grid">
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-db">DB</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>list_tables</code></div>
+          <div class="tile-namespace">postgres.schema</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Enumerate tables in the authenticated principal's primary schema. Wildcards accepted.</p>
+      <div class="tile-footer"><span class="args">schema, include_views, min_rows</span><span class="arrow">→</span></div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-db">DB</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>exec_query</code></div>
+          <div class="tile-namespace">postgres.query</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Run a parameterised SELECT. Statement is sandboxed and read-only — writes routed via <code class="mono">exec_mutation</code>.</p>
+      <div class="tile-footer"><span class="args">sql, params, timeout_ms</span><span class="arrow">→</span></div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-db">DB</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>describe_table</code></div>
+          <div class="tile-namespace">postgres.schema</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Column types, indexes, foreign-keys and a row-count estimate for a single table.</p>
+      <div class="tile-footer"><span class="args">table</span><span class="arrow">→</span></div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-db">DB</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>exec_mutation</code></div>
+          <div class="tile-namespace">postgres.write</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span><span class="tag dangerous">!</span></div>
+      </div>
+      <p>Run a write inside a savepointed transaction. Rolls back on first non-OK row count outside <code class="mono">expected</code>.</p>
+      <div class="tile-footer"><span class="args">sql, params, expected</span><span class="arrow">→</span></div>
+    </div>
+  </div>
+
+  <div class="cat-h">Filesystem · Object storage</div>
+  <div class="grid">
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-fs">FS</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>list_objects</code></div>
+          <div class="tile-namespace">s3.bucket</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>List S3 objects with prefix + glob filters. Paginated, streaming. Returns <code class="mono">size</code>, <code class="mono">last_modified</code>, <code class="mono">etag</code>.</p>
+      <div class="tile-footer"><span class="args">bucket, prefix, glob, limit</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-fs">FS</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>read_object</code></div>
+          <div class="tile-namespace">s3.object</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Stream a single S3 object as bytes or text. Range requests supported. Decodes <code class="mono">.gz</code> transparently.</p>
+      <div class="tile-footer"><span class="args">bucket, key, range, decode</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-fs">FS</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>put_object</code></div>
+          <div class="tile-namespace">s3.object</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span></div>
+      </div>
+      <p>Upload bytes or a stream. Server-side encryption + content-type inferred from extension.</p>
+      <div class="tile-footer"><span class="args">bucket, key, body, sse</span><span class="arrow">→</span></div>
+    </div>
+  </div>
+
+  <div class="cat-h">HTTP / API</div>
+  <div class="grid">
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-api">API</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>fetch_url</code></div>
+          <div class="tile-namespace">http</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>HTTP GET with timeout + retry. Body returned as text, JSON-parsed when content-type matches.</p>
+      <div class="tile-footer"><span class="args">url, headers, timeout_ms, retry</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-api">API</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>graphql_query</code></div>
+          <div class="tile-namespace">api.graphql</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Execute a GraphQL query against a registered endpoint. Variables typed via the imported schema.</p>
+      <div class="tile-footer"><span class="args">endpoint_id, query, variables</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-api">API</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>webhook_dispatch</code></div>
+          <div class="tile-namespace">http.webhook</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span></div>
+      </div>
+      <p>POST a signed payload to a registered webhook target. HMAC + tenant scoping. Retries with backoff.</p>
+      <div class="tile-footer"><span class="args">target_id, payload, idempotency</span><span class="arrow">→</span></div>
+    </div>
+  </div>
+
+  <div class="cat-h">Messaging · VCS</div>
+  <div class="grid">
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-msg">MSG</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>slack_post</code></div>
+          <div class="tile-namespace">slack.chat</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span></div>
+      </div>
+      <p>Send a Slack message. Blocks and threads supported. Rate-limited per channel.</p>
+      <div class="tile-footer"><span class="args">channel, text, blocks, thread_ts</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-msg">MSG</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>linear_create_issue</code></div>
+          <div class="tile-namespace">linear.issues</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span></div>
+      </div>
+      <p>Create a Linear issue with title, description, team, project and labels. Idempotent on title+team.</p>
+      <div class="tile-footer"><span class="args">title, description, team, labels</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-vcs">VCS</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>github_search_code</code></div>
+          <div class="tile-namespace">github.search</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Search a repo's code with GitHub's qualified syntax. Returns ranked matches + 3-line snippets.</p>
+      <div class="tile-footer"><span class="args">repo, q, lang, limit</span><span class="arrow">→</span></div>
+    </div>
+  </div>
+
+  <div class="cat-h">Search · Mail</div>
+  <div class="grid">
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-search">SRH</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>web_search</code></div>
+          <div class="tile-namespace">search.web</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Federated web search across Brave / Bing / Tavily. Returns deduplicated results with snippets.</p>
+      <div class="tile-footer"><span class="args">q, engine, n, region</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-search">SRH</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>fetch_pdf</code></div>
+          <div class="tile-namespace">research</div>
+        </div>
+        <div class="tile-tags"><span class="tag read">read</span></div>
+      </div>
+      <p>Download a PDF and return cleaned text. Recognises arXiv IDs and resolves to canonical sources.</p>
+      <div class="tile-footer"><span class="args">url_or_arxiv_id, max_pages</span><span class="arrow">→</span></div>
+    </div>
+    <div class="tile">
+      <div class="tile-h">
+        <div class="tile-ico ico-mail">MAIL</div>
+        <div class="tile-meta">
+          <div class="tile-name"><code>send_email</code></div>
+          <div class="tile-namespace">mail.smtp</div>
+        </div>
+        <div class="tile-tags"><span class="tag write">write</span></div>
+      </div>
+      <p>Send a transactional email via SES / Resend / SMTP. Templating + idempotency keys built in.</p>
+      <div class="tile-footer"><span class="args">to, subject, body, template_id</span><span class="arrow">→</span></div>
+    </div>
+  </div>
+
+</section>
+</body>
+</html>

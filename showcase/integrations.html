@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Integrations — Linden</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%23ec4899'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff; --panel: #fafaf9; --panel-2: #f5f5f4;
+  --ink: #0c0a09; --ink-2: #292524; --muted: #57534e; --subtle: #a8a29e;
+  --border: #e7e5e4; --border-strong: #d6d3d1;
+  --accent: #7c3aed; --pink: #db2777; --accent-soft: #f5f3ff;
+  --emerald: #059669;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; letter-spacing: -0.011em; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 13px; }
+a { color: inherit; text-decoration: none; }
+
+.topnav { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.topnav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 60px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; }
+.brand-name { font-size: 16px; font-weight: 600; }
+.tn-link { color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 0; cursor: pointer; }
+.tn-link:hover { color: var(--accent); }
+.tn-link.active { color: var(--accent); }
+.gh { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; color: var(--ink-2); }
+.btn-primary { background: var(--ink); color: white; padding: 7px 15px; border-radius: 7px; font-weight: 500; font-size: 13.5px; cursor: pointer; border: 1px solid var(--ink); }
+
+.page { max-width: 1280px; margin: 0 auto; padding: 48px 32px; }
+.h1 { font-size: 38px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; }
+.sub { font-size: 16px; color: var(--muted); margin-top: 10px; max-width: 700px; line-height: 1.5; }
+
+.cat { margin-top: 36px; }
+.cat-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); font-weight: 700; }
+.cat-line { flex: 1; border-bottom: 1px dashed var(--border-strong); }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 22px; position: relative; cursor: pointer; transition: border-color 100ms, box-shadow 100ms; }
+.card:hover { border-color: var(--accent); box-shadow: 0 4px 12px -4px rgba(124,58,237,0.15); }
+.card.featured { background: linear-gradient(135deg, var(--accent-soft) 0%, #fdf2f8 100%); border-color: #ddd6fe; }
+.card-icon { width: 40px; height: 40px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 16px; }
+.card .name { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 4px; }
+.card .meta { font-size: 12px; color: var(--subtle); font-family: 'JetBrains Mono'; margin-bottom: 12px; }
+.card p { font-size: 13.5px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px; }
+.tag-mini { font-size: 10.5px; padding: 1px 6px; border-radius: 4px; background: var(--panel-2); color: var(--ink-2); font-family: 'JetBrains Mono'; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 11.5px; color: var(--subtle); }
+.card-footer .install { color: var(--accent); font-weight: 500; cursor: pointer; }
+.card .badge { position: absolute; top: 14px; right: 14px; background: var(--accent); color: white; font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 600; letter-spacing: 0.04em; }
+.card.community .badge { background: var(--panel-2); color: var(--muted); }
+
+/* per-icon colors */
+.ic-claude  { background: #fef3c7; color: #b45309; }
+.ic-cursor  { background: #dbeafe; color: #1d4ed8; }
+.ic-zed     { background: #ecfeff; color: #0e7490; }
+.ic-vsc     { background: #dbeafe; color: #1e40af; }
+.ic-cline   { background: #fce7f3; color: #be185d; }
+.ic-cody    { background: #ffe4e6; color: #be123c; }
+.ic-cont    { background: #dcfce7; color: #15803d; }
+.ic-py      { background: #fef3c7; color: #92400e; }
+.ic-ts      { background: #dbeafe; color: #1d4ed8; }
+.ic-go      { background: #cffafe; color: #0e7490; }
+.ic-rust    { background: #fee2e2; color: #b91c1c; }
+.ic-deno    { background: #1f2937; color: #f5f5f4; }
+.ic-langgraph { background: #dcfce7; color: #15803d; }
+.ic-langchain { background: #ddd6fe; color: #5b21b6; }
+.ic-dspy    { background: #fce7f3; color: #9d174d; }
+.ic-pydantic{ background: #fef3c7; color: #92400e; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-logo"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 5 L6 3 V7 H4 Z M7 3 L9 5 V7 H7 Z M10 3 L12 5 V7 H10 Z M4 8 H12 V11 H4 Z M4 12 H10 V14 H4 Z"/></svg></div>
+      <div class="brand-name">Linden</div>
+    </div>
+    <a class="tn-link" href="landing.html">Product</a>
+    <a class="tn-link" href="quickstart.html">Quickstart</a>
+    <a class="tn-link" href="index.html">API Reference</a>
+    <a class="tn-link" href="tools.html">Tools</a>
+    <a class="tn-link active">Integrations</a>
+    <div style="flex:1"></div>
+    <span class="gh"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 00-2.5 15.6c.4.1.5-.2.5-.4v-1.4c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.2 1.9.9 2.4.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.6 7.6 0 014 0c1.5-1 2.2-.8 2.2-.8.4 1.1.2 1.9.1 2.1.5.5.8 1.2.8 2.1 0 3.1-1.8 3.7-3.6 4 .3.3.5.7.5 1.5v2.2c0 .2.1.5.5.4A8 8 0 008 0"/></svg> 1.2k</span>
+    <button class="btn-primary">Install</button>
+  </div>
+</nav>
+
+<section class="page">
+  <div>
+    <div class="h1">Integrations</div>
+    <p class="sub">Linden speaks vanilla MCP — every client below picks up your server with no per-client code. Install with a one-line config or via the marketplace.</p>
+  </div>
+
+  <div class="cat">
+    <div class="cat-h"><span class="cat-label">MCP Clients · ready to connect</span><span class="cat-line"></span></div>
+    <div class="cards">
+      <div class="card featured">
+        <span class="badge">First-party</span>
+        <div class="card-icon ic-claude">⚯</div>
+        <div class="name">Claude Desktop</div>
+        <div class="meta">claude-desktop · macOS · Windows</div>
+        <p>Drop a 4-line entry into <code class="mono" style="background: rgba(124,58,237,0.1); padding: 1px 5px; border-radius: 3px;">claude_desktop_config.json</code>. Tools surface in the slash menu.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span><span class="tag-mini">http</span></div>
+        <div class="card-footer"><span>Used by 89% of installs</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-cursor">▷</div>
+        <div class="name">Cursor</div>
+        <div class="meta">cursor.sh · MCP marketplace</div>
+        <p>Surfaces Linden tools as composer actions. Auto-injects context based on open file.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span><span class="tag-mini">ws</span></div>
+        <div class="card-footer"><span>2-click install</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-zed">Z</div>
+        <div class="name">Zed</div>
+        <div class="meta">zed.dev · assistant panel</div>
+        <p>Tools appear in Zed's assistant panel after a single <code class="mono" style="background:#ecfeff; padding: 1px 5px; border-radius: 3px;">mcp.toml</code> entry.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span></div>
+        <div class="card-footer"><span>Community-maintained</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-vsc">⊕</div>
+        <div class="name">VS Code · Copilot</div>
+        <div class="meta">vscode-mcp · ext.</div>
+        <p>Brings Linden tools into Copilot Chat. Workspace tools also queryable as <code class="mono" style="background:#dbeafe; padding: 1px 5px; border-radius: 3px;">@linden</code>.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span><span class="tag-mini">ws</span></div>
+        <div class="card-footer"><span>v0.4 · ext.</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card community">
+        <span class="badge">Community</span>
+        <div class="card-icon ic-cline">⇄</div>
+        <div class="name">Cline</div>
+        <div class="meta">github.com/cline/cline</div>
+        <p>Autonomous coding agent — uses Linden tools to read, plan, and modify code with explicit approvals.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span></div>
+        <div class="card-footer"><span>Community-maintained</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card community">
+        <span class="badge">Community</span>
+        <div class="card-icon ic-cody">⌘</div>
+        <div class="name">Sourcegraph · Cody</div>
+        <div class="meta">cody.sourcegraph.com</div>
+        <p>MCP tools appear inline in chat — particularly useful for code-context-heavy workflows.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span></div>
+        <div class="card-footer"><span>Community-maintained</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card community">
+        <span class="badge">Community</span>
+        <div class="card-icon ic-cont">▸</div>
+        <div class="name">Continue.dev</div>
+        <div class="meta">continue.dev · IDE plugin</div>
+        <p>Pairs Linden tools with custom Continue plugins. Surfaces tools in autocomplete + chat.</p>
+        <div class="card-tags"><span class="tag-mini">stdio</span><span class="tag-mini">ws</span></div>
+        <div class="card-footer"><span>Community-maintained</span><span class="install">Install →</span></div>
+      </div>
+      <div class="card community">
+        <div class="card-icon" style="background: #f5f5f4; color: var(--muted);">+</div>
+        <div class="name">Browse marketplace</div>
+        <div class="meta">linden.dev/marketplace</div>
+        <p>12 more clients listed in the directory. Submit your own client via PR — it's a public registry.</p>
+        <div class="card-tags"><span class="tag-mini">12 more</span></div>
+        <div class="card-footer"><span>Updated weekly</span><span class="install">Browse →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <div class="cat-h"><span class="cat-label">SDK Bindings · build a custom client</span><span class="cat-line"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon ic-py">PY</div>
+        <div class="name">Python</div>
+        <div class="meta">pip · linden-mcp</div>
+        <p>Reference implementation. Pydantic-typed tools. Pairs natively with FastAPI, asyncio.</p>
+        <div class="card-footer"><span>v1.2.0 · 4 days ago</span><span class="install">Docs →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-ts">TS</div>
+        <div class="name">TypeScript</div>
+        <div class="meta">npm · @linden/mcp</div>
+        <p>Zod-typed alternative for Node and Bun. Works in Edge runtimes (Vercel, Cloudflare).</p>
+        <div class="card-footer"><span>v1.1.4 · 1 week ago</span><span class="install">Docs →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-go">GO</div>
+        <div class="name">Go</div>
+        <div class="meta">go.linden.dev/mcp</div>
+        <p>For services that need single-binary deploys. Generics-based schema synth.</p>
+        <div class="card-footer"><span>v0.9.1 · 3 weeks ago</span><span class="install">Docs →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-rust">RS</div>
+        <div class="name">Rust</div>
+        <div class="meta">cargo · linden-mcp</div>
+        <p>Zero-copy async server. Serde-typed. Useful for embedding inside Tauri or wasm targets.</p>
+        <div class="card-footer"><span>v0.4.0 · 6 weeks ago</span><span class="install">Docs →</span></div>
+      </div>
+      <div class="card community">
+        <span class="badge">Community</span>
+        <div class="card-icon ic-deno">D</div>
+        <div class="name">Deno</div>
+        <div class="meta">deno.land/x/linden</div>
+        <p>Wraps the TS SDK with native Deno permissions for the sandbox layer.</p>
+        <div class="card-footer"><span>v0.2.0</span><span class="install">Docs →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat">
+    <div class="cat-h"><span class="cat-label">Agent frameworks · expose Linden as their tool interface</span><span class="cat-line"></span></div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon ic-langgraph">LG</div>
+        <div class="name">LangGraph</div>
+        <div class="meta">langchain · graph runtime</div>
+        <p>Auto-import Linden tools as LangGraph <code class="mono" style="background: #dcfce7; padding: 1px 5px; border-radius: 3px;">ToolNode</code>s. Stream events plug into LangGraph's checkpointer.</p>
+        <div class="card-footer"><span>Bidirectional · official</span><span class="install">Guide →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-langchain">LC</div>
+        <div class="name">LangChain</div>
+        <div class="meta">langchain · LCEL</div>
+        <p>Wrap a Linden server with <code class="mono" style="background: #ddd6fe; padding: 1px 5px; border-radius: 3px;">LindenToolkit</code> — exposes every tool as a LangChain Tool.</p>
+        <div class="card-footer"><span>Bidirectional · official</span><span class="install">Guide →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-dspy">DS</div>
+        <div class="name">DSPy</div>
+        <div class="meta">dspy-ai · agent module</div>
+        <p>Compile DSPy programs against Linden tools. Bootstrap signatures from the inferred JSON Schema.</p>
+        <div class="card-footer"><span>v2.x · community</span><span class="install">Guide →</span></div>
+      </div>
+      <div class="card">
+        <div class="card-icon ic-pydantic">PA</div>
+        <div class="name">Pydantic-AI</div>
+        <div class="meta">pydantic-ai · agent</div>
+        <p>Use Linden tools as Pydantic-AI tool registrations. Same schema, no double-typing.</p>
+        <div class="card-footer"><span>v0.6 · community</span><span class="install">Guide →</span></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+</body>
+</html>

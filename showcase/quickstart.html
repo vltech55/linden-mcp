@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quickstart · Linden MCP Server</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%23ec4899'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --panel: #fafaf9;
+  --panel-2: #f5f5f4;
+  --ink: #0c0a09;
+  --ink-2: #292524;
+  --muted: #57534e;
+  --subtle: #a8a29e;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --accent: #7c3aed;
+  --accent-soft: #f5f3ff;
+  --pink: #ec4899;
+  --emerald: #059669;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; line-height: 1.55; letter-spacing: -0.011em; }
+code, pre, .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 13px; }
+
+.topnav { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.topnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; }
+.brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.brand-sep { color: var(--border-strong); font-weight: 300; }
+.brand-context { color: var(--muted); font-size: 14.5px; }
+.tn-link { color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 0; cursor: pointer; }
+.tn-link:hover { color: var(--accent); }
+.tn-link.active { color: var(--accent); }
+.tn-search { flex: 1; max-width: 380px; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 13px; color: var(--subtle); margin-left: auto; }
+.kbd { padding: 1px 5px; border: 1px solid var(--border-strong); border-radius: 4px; font-size: 10.5px; background: white; color: var(--muted); font-family: 'JetBrains Mono'; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink-2); text-decoration: none; }
+.btn-primary { background: var(--ink); color: white; border-color: var(--ink); }
+
+/* Hero */
+.hero { max-width: 1400px; margin: 0 auto; padding: 56px 32px 64px; position: relative; overflow: hidden; }
+.hero::before { content:''; position:absolute; right:-200px; top:-100px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,58,237,0.07), transparent 60%); pointer-events:none; }
+.hero::after  { content:''; position:absolute; left:-200px; bottom:-200px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(236,72,153,0.06), transparent 60%); pointer-events:none; }
+.hero-inner { display: grid; grid-template-columns: 1fr 520px; gap: 56px; align-items: center; position: relative; z-index: 1; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+.eyebrow .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); }
+.hero-title { font-size: 44px; font-weight: 700; letter-spacing: -0.026em; line-height: 1.08; margin-bottom: 18px; }
+.hero-title .grad { background: linear-gradient(120deg, #7c3aed, #ec4899 70%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-lede { font-size: 17px; color: var(--muted); line-height: 1.55; margin-bottom: 28px; max-width: 540px; }
+.cta-row { display: flex; gap: 10px; }
+.btn-cta { padding: 10px 18px; font-size: 14px; font-weight: 500; border-radius: 8px; }
+.cta-meta { margin-top: 26px; display: flex; gap: 22px; color: var(--subtle); font-size: 13px; }
+.cta-meta strong { color: var(--ink-2); font-weight: 500; }
+
+.code-card { background: #1c1917; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04); }
+.cc-head { background: #0c0a09; padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono'; font-size: 12px; color: #a8a29e; }
+.cc-head .dot1 { width:10px; height:10px; border-radius:50%; background:#525252; }
+.cc-tabs { display:flex; gap:14px; margin-left:8px; }
+.cc-tab { padding: 1px 0; color: #78716c; cursor: pointer; }
+.cc-tab.active { color: #fafaf9; }
+.cc-body { padding: 18px 22px; font-family: 'JetBrains Mono'; font-size: 13px; line-height: 1.75; color: #fafaf9; }
+.hl-cmt { color: #78716c; font-style: italic; }
+.hl-key { color: #c084fc; }
+.hl-str { color: #fcd34d; }
+.hl-num { color: #67e8f9; }
+.hl-prop { color: #fda4af; }
+.hl-fn { color: #86efac; }
+
+/* Features grid */
+.features { max-width: 1200px; margin: 24px auto 48px; padding: 0 32px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.feature { padding: 22px; border: 1px solid var(--border); border-radius: 11px; background: var(--bg); }
+.feature-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.fi-1 { background: #f5f3ff; color: #7c3aed; }
+.fi-2 { background: #fdf2f8; color: #db2777; }
+.fi-3 { background: #ecfdf5; color: #047857; }
+.fi-4 { background: #fff7ed; color: #c2410c; }
+.feature-title { font-weight: 600; font-size: 14.5px; margin-bottom: 4px; }
+.feature-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+/* Steps */
+.steps { max-width: 1100px; margin: 0 auto; padding: 0 32px 60px; }
+.steps-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--subtle); font-weight: 600; margin-bottom: 18px; }
+.step-row { display: grid; grid-template-columns: 60px 280px 1fr; gap: 24px; padding: 22px 0; border-top: 1px solid var(--border); align-items: flex-start; }
+.step-num { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--accent); font-weight: 600; padding-top: 4px; }
+.step-head h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.014em; margin-bottom: 5px; }
+.step-head p { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.step-code { background: #1c1917; color: #fafaf9; border-radius: 8px; padding: 14px 16px; font-family: 'JetBrains Mono'; font-size: 12.5px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 5 L5 3 V7 H3 Z M6 3 L8 5 V7 H6 Z M9 3 L11 5 V7 H9 Z M3 8 H13 V10 H3 Z M3 11 H10 V13 H3 Z"/></svg>
+      </div>
+      <span class="brand-name">Linden</span>
+      <span class="brand-sep">/</span>
+      <span class="brand-context">MCP Server</span>
+    </div>
+    <span class="tn-link active">Quickstart</span>
+    <span class="tn-link">API reference</span>
+    <span class="tn-link">Guides</span>
+    <span class="tn-link">Changelog</span>
+    <div class="tn-search">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11 L14 14"/></svg>
+      <span style="flex:1">Search the docs…</span>
+      <span class="kbd">⌘K</span>
+    </div>
+    <span class="kbd" style="background:white">v1.4.2</span>
+    <a class="btn">GitHub</a>
+    <a class="btn btn-primary">Get key</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">
+        <span class="pulse"></span>
+        Now in v1.4 · streaming tool calls
+      </div>
+      <h1 class="hero-title">
+        Give agents <span class="grad">typed, safe tools</span><br/>
+        in one line of code.
+      </h1>
+      <p class="hero-lede">
+        Linden is an MCP server you point at your data: Postgres, S3, internal APIs, anything. Tools and resources are auto-generated, schema-validated, and traceable. Drop in a Claude, GPT, or local agent — they all speak the same protocol.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary btn-cta">Install · 30s →</a>
+        <a class="btn btn-cta">Read the spec</a>
+      </div>
+      <div class="cta-meta">
+        <span><strong>10k+</strong> calls / sec</span>
+        <span><strong>14</strong> built-in adapters</span>
+        <span><strong>0</strong> servers to operate</span>
+      </div>
+    </div>
+
+    <div class="code-card">
+      <div class="cc-head">
+        <span class="dot1"></span>
+        <span class="cc-tabs">
+          <span class="cc-tab active">server.py</span>
+          <span class="cc-tab">client.py</span>
+          <span class="cc-tab">claude_desktop.json</span>
+        </span>
+      </div>
+<div class="cc-body"><pre><span class="hl-cmt"># pip install linden-mcp</span>
+<span class="hl-key">from</span> linden <span class="hl-key">import</span> Server, tool
+
+mcp = Server(<span class="hl-str">"customer-support-tools"</span>)
+
+<span class="hl-cmt"># Schema-typed tools become MCP endpoints.</span>
+<span class="hl-cmt"># Validation, retries, and audit logs come free.</span>
+<span class="hl-prop">@tool</span>
+<span class="hl-key">def</span> <span class="hl-fn">find_order</span>(order_id: <span class="hl-key">str</span>) -&gt; Order:
+    <span class="hl-str">"""Look up an order in the production OMS."""</span>
+    <span class="hl-key">return</span> oms.get(order_id)
+
+<span class="hl-prop">@tool</span>
+<span class="hl-key">def</span> <span class="hl-fn">refund</span>(order_id: <span class="hl-key">str</span>, amount: <span class="hl-key">float</span>, reason: <span class="hl-key">str</span>):
+    <span class="hl-str">"""Issue a refund. Requires reason for the audit log."""</span>
+    <span class="hl-key">return</span> oms.refund(order_id, amount, reason=reason)
+
+<span class="hl-cmt"># Done. Run it.</span>
+mcp.serve(transport=<span class="hl-str">"sse"</span>, port=<span class="hl-num">8000</span>)</pre></div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="feature">
+    <div class="feature-icon fi-1"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5 H13 V11 H3 Z M3 8 H13"/></svg></div>
+    <div class="feature-title">Schema-validated I/O</div>
+    <div class="feature-desc">Tools are typed. Arguments are validated. Bad input is rejected before it reaches your code.</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon fi-2"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2 L13 5 V11 L8 14 L3 11 V5 Z"/></svg></div>
+    <div class="feature-title">Sandboxed by default</div>
+    <div class="feature-desc">Read-only by default. Mutations require explicit grants and write to the immutable audit log.</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon fi-3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12 L6 7 L9 10 L14 4"/></svg></div>
+    <div class="feature-title">Built-in observability</div>
+    <div class="feature-desc">Every call traced. Latency, payload, error class, and originating agent — out of the box.</div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon fi-4"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8 H8 M8 3 L13 8 L8 13"/></svg></div>
+    <div class="feature-title">Streaming responses</div>
+    <div class="feature-desc">Long tools yield incrementally. The agent gets a typed stream, not a 30-second hang.</div>
+  </div>
+</section>
+
+<section class="steps">
+  <div class="steps-title">Quickstart · 3 steps · 4 minutes</div>
+  <div class="step-row">
+    <div class="step-num">01</div>
+    <div class="step-head">
+      <h3>Install the server</h3>
+      <p>Linden ships as a small Python wheel. No daemons, no containers required.</p>
+    </div>
+    <div class="step-code"><span class="hl-cmt">$</span> pip install linden-mcp
+<span class="hl-cmt">$</span> linden init customer-support-tools <span class="hl-cmt">--template=python</span></div>
+  </div>
+  <div class="step-row">
+    <div class="step-num">02</div>
+    <div class="step-head">
+      <h3>Declare your tools</h3>
+      <p>Annotate Python functions with <code>@tool</code> or <code>@resource</code>. Type hints become the MCP schema; docstrings become the LLM-facing description.</p>
+    </div>
+    <div class="step-code"><span class="hl-prop">@tool</span>
+<span class="hl-key">def</span> <span class="hl-fn">list_invoices</span>(vendor: <span class="hl-key">str</span>, limit: <span class="hl-key">int</span> = <span class="hl-num">10</span>) -&gt; <span class="hl-key">list</span>[Invoice]:
+    <span class="hl-str">"""Return the last N invoices for a vendor."""</span>
+    <span class="hl-key">return</span> db.q(<span class="hl-str">"select * from invoices where vendor=? limit ?"</span>, vendor, limit)</div>
+  </div>
+  <div class="step-row">
+    <div class="step-num">03</div>
+    <div class="step-head">
+      <h3>Connect from any client</h3>
+      <p>Claude Desktop, Continue, Cursor, Cody — point them at the server URL. Local stdio works too.</p>
+    </div>
+    <div class="step-code">{
+  <span class="hl-prop">"mcpServers"</span>: {
+    <span class="hl-prop">"customer-support-tools"</span>: {
+      <span class="hl-prop">"url"</span>: <span class="hl-str">"https://mcp.linden.io/customer-support"</span>,
+      <span class="hl-prop">"headers"</span>: { <span class="hl-prop">"Authorization"</span>: <span class="hl-str">"Bearer $LINDEN_KEY"</span> }
+    }
+  }
+}</div>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Linden · MCP Server Reference</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%237c3aed'/><stop offset='1' stop-color='%23ec4899'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><path d='M9 11 L13 7 V14 H9 Z M14 7 L18 11 V14 H14 Z M19 7 L23 11 V14 H19 Z M9 16 H23 V20 H9 Z M9 22 H18 V25 H9 Z' fill='white' opacity='0.95'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --panel: #fafaf9;
+  --panel-2: #f5f5f4;
+  --ink: #0c0a09;
+  --ink-2: #292524;
+  --muted: #57534e;
+  --subtle: #a8a29e;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --accent: #7c3aed;
+  --accent-soft: #f5f3ff;
+  --accent-hover: #6d28d9;
+  --pink: #db2777;
+  --pink-soft: #fdf2f8;
+  --emerald: #059669;
+  --code-bg: #faf9f7;
+  --code-ink: #0c0a09;
+  --hl-key: #7c3aed;
+  --hl-str: #c2410c;
+  --hl-num: #0891b2;
+  --hl-prop: #be123c;
+  --hl-cmt: #78716c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; font-feature-settings: 'cv11', 'ss01'; -webkit-font-smoothing: antialiased; letter-spacing: -0.011em; line-height: 1.5; }
+code, pre, .mono { font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace; font-size: 13px; }
+
+/* Top nav */
+.topnav { border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; }
+.topnav-inner { max-width: 1400px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 28px; }
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white; }
+.brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.brand-sep { color: var(--border-strong); font-weight: 300; }
+.brand-context { color: var(--muted); font-size: 14.5px; }
+.tn-link { color: var(--ink-2); font-size: 14px; font-weight: 500; padding: 4px 0; }
+.tn-link:hover { color: var(--accent); cursor: pointer; }
+.tn-link.active { color: var(--accent); }
+.tn-search { flex: 1; max-width: 380px; display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 13px; color: var(--subtle); margin-left: auto; }
+.kbd { padding: 1px 5px; border: 1px solid var(--border-strong); border-radius: 4px; font-size: 10.5px; background: white; color: var(--muted); font-family: 'JetBrains Mono'; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink-2); text-decoration: none; }
+.btn-primary { background: var(--ink); color: white; border-color: var(--ink); }
+
+/* Layout */
+.app { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 250px 1fr 320px; gap: 0; }
+.sidebar { padding: 28px 16px 40px 32px; border-right: 1px solid var(--border); min-height: calc(100vh - 56px); }
+.sb-section + .sb-section { margin-top: 24px; }
+.sb-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); font-weight: 600; padding: 0 8px 6px; }
+.sb-item { display: flex; align-items: center; gap: 9px; padding: 4.5px 10px; border-radius: 6px; font-size: 13.5px; color: var(--ink-2); cursor: pointer; margin-bottom: 1px; }
+.sb-item:hover { background: var(--panel); }
+.sb-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.sb-method { font-family: 'JetBrains Mono'; font-size: 9.5px; font-weight: 600; padding: 1px 5px; border-radius: 3px; min-width: 32px; text-align: center; }
+.m-get { background: #e0f2fe; color: #0369a1; }
+.m-post { background: #ecfdf5; color: #047857; }
+.m-tool { background: #f5f3ff; color: #6d28d9; }
+.m-res { background: #fdf2f8; color: #be185d; }
+
+/* Content */
+.content { padding: 36px 56px; max-width: 880px; }
+.crumb { color: var(--subtle); font-size: 13px; margin-bottom: 6px; }
+.crumb b { color: var(--ink-2); font-weight: 500; }
+.endpoint-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.method-badge { font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+.url-path { font-family: 'JetBrains Mono'; font-size: 16px; color: var(--ink); font-weight: 500; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.026em; margin: 8px 0 12px; }
+.lede { color: var(--muted); font-size: 15.5px; line-height: 1.55; margin-bottom: 24px; }
+.lede code { background: var(--panel); padding: 1px 6px; border-radius: 4px; font-size: 13px; color: var(--accent-hover); }
+
+h2 { font-size: 19px; font-weight: 600; letter-spacing: -0.018em; margin: 30px 0 10px; padding-top: 24px; border-top: 1px solid var(--border); }
+h2:first-of-type { padding-top: 0; border-top: none; }
+h3 { font-size: 15px; font-weight: 600; margin: 18px 0 8px; }
+p { color: var(--ink-2); margin-bottom: 10px; font-size: 14.5px; }
+
+.params { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+.param { display: grid; grid-template-columns: 180px 1fr 110px; gap: 16px; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: flex-start; font-size: 13.5px; }
+.param:last-child { border-bottom: none; }
+.param-name { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--ink); font-weight: 500; }
+.param-name .req { color: var(--pink); margin-left: 4px; font-weight: 600; }
+.param-desc { color: var(--muted); line-height: 1.5; }
+.param-desc code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.param-type { font-family: 'JetBrains Mono'; font-size: 11.5px; color: var(--accent); text-align: right; }
+
+.tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0 8px; }
+.tool-card { padding: 14px 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg); }
+.tool-card:hover { border-color: var(--border-strong); cursor: pointer; }
+.tool-card-name { font-family: 'JetBrains Mono'; font-size: 13.5px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.tool-card-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.tool-card-meta { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--subtle); margin-top: 8px; }
+
+/* Right rail */
+.rail { padding: 36px 32px 36px 28px; border-left: 1px solid var(--border); min-height: calc(100vh - 56px); }
+.rail-tabs { display: flex; gap: 4px; padding: 4px; background: var(--panel); border-radius: 7px; margin-bottom: 12px; }
+.rail-tab { padding: 5px 11px; border-radius: 5px; font-size: 12px; cursor: pointer; color: var(--muted); font-weight: 500; }
+.rail-tab.active { background: white; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.codeblock { background: #1c1917; color: #fafaf9; border-radius: 9px; overflow: hidden; font-family: 'JetBrains Mono'; font-size: 12.5px; line-height: 1.7; }
+.cb-head { background: #0c0a09; color: #a8a29e; padding: 7px 14px; font-size: 11.5px; display: flex; align-items: center; justify-content: space-between; }
+.cb-head .lang { display: flex; align-items: center; gap: 6px; }
+.cb-head .lang .dot { width: 7px; height: 7px; border-radius: 50%; background: #ec4899; }
+.cb-body { padding: 14px 16px; }
+.cb-body pre { white-space: pre-wrap; }
+.hl-key { color: #c084fc; }
+.hl-str { color: #fcd34d; }
+.hl-num { color: #67e8f9; }
+.hl-prop { color: #fda4af; }
+.hl-cmt { color: #78716c; font-style: italic; }
+.hl-bool { color: #67e8f9; }
+
+.response-block { margin-top: 18px; }
+.response-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--subtle); font-weight: 600; margin-bottom: 6px; }
+.response-status { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 5px; font-size: 11.5px; font-weight: 600; font-family: 'JetBrains Mono'; }
+.rs-200 { background: #ecfdf5; color: #047857; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M3 5 L5 3 V7 H3 Z M6 3 L8 5 V7 H6 Z M9 3 L11 5 V7 H9 Z M12 3 L13 5 V7 H12 Z M3 8 H13 V10 H3 Z M3 11 H10 V13 H3 Z"/></svg>
+      </div>
+      <span class="brand-name">Linden</span>
+      <span class="brand-sep">/</span>
+      <span class="brand-context">MCP Server</span>
+    </div>
+    <span class="tn-link">Quickstart</span>
+    <span class="tn-link active">API reference</span>
+    <span class="tn-link">Guides</span>
+    <span class="tn-link">Changelog</span>
+    <div class="tn-search">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11 L14 14"/></svg>
+      <span style="flex:1">Search the docs…</span>
+      <span class="kbd">⌘K</span>
+    </div>
+    <span class="kbd" style="background: white">v1.4.2</span>
+    <a class="btn">GitHub</a>
+    <a class="btn btn-primary">Get key</a>
+  </div>
+</nav>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Getting started</div>
+      <div class="sb-item">Overview</div>
+      <div class="sb-item">Authentication</div>
+      <div class="sb-item">Transport · stdio</div>
+      <div class="sb-item">Transport · HTTP/SSE</div>
+      <div class="sb-item">Rate limits</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Tools</div>
+      <div class="sb-item"><span class="sb-method m-tool">TOOL</span> read_file</div>
+      <div class="sb-item active"><span class="sb-method m-tool">TOOL</span> list_tables</div>
+      <div class="sb-item"><span class="sb-method m-tool">TOOL</span> exec_query</div>
+      <div class="sb-item"><span class="sb-method m-tool">TOOL</span> search_docs</div>
+      <div class="sb-item"><span class="sb-method m-tool">TOOL</span> get_forecast</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Resources</div>
+      <div class="sb-item"><span class="sb-method m-res">RES</span> sql://schema</div>
+      <div class="sb-item"><span class="sb-method m-res">RES</span> file:///docs</div>
+      <div class="sb-item"><span class="sb-method m-res">RES</span> weather://current</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Endpoints</div>
+      <div class="sb-item"><span class="sb-method m-get">GET</span> /healthz</div>
+      <div class="sb-item"><span class="sb-method m-post">POST</span> /tools/list</div>
+      <div class="sb-item"><span class="sb-method m-post">POST</span> /tools/call</div>
+      <div class="sb-item"><span class="sb-method m-post">POST</span> /resources/read</div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="crumb"><b>API</b> · Tools · list_tables</div>
+    <div class="endpoint-head">
+      <span class="method-badge m-tool">TOOL</span>
+      <span class="url-path">list_tables</span>
+    </div>
+    <h1>List database tables</h1>
+    <p class="lede">
+      Returns every table the authenticated principal can read, with row counts and a one-line description from the schema's <code>COMMENT</code>. Backed by the <code>sql://schema</code> resource, this is the tool an agent calls first when it needs to ground a query in real data.
+    </p>
+
+    <h2>Arguments</h2>
+    <div class="params">
+      <div class="param">
+        <div class="param-name">schema<span class="req">*</span></div>
+        <div class="param-desc">Schema name to introspect. Defaults to the principal's primary schema. Wildcards accepted: <code>analytics_*</code>.</div>
+        <div class="param-type">string</div>
+      </div>
+      <div class="param">
+        <div class="param-name">include_views</div>
+        <div class="param-desc">When <code>true</code>, materialized views and standard views appear alongside base tables.</div>
+        <div class="param-type">boolean · false</div>
+      </div>
+      <div class="param">
+        <div class="param-name">min_rows</div>
+        <div class="param-desc">Filter out tables with fewer rows than this. Useful for pruning fixtures and migration tables out of agent context.</div>
+        <div class="param-type">integer · 0</div>
+      </div>
+      <div class="param">
+        <div class="param-name">limit</div>
+        <div class="param-desc">Cap the returned list. Max <code>500</code>.</div>
+        <div class="param-type">integer · 100</div>
+      </div>
+    </div>
+
+    <h2>Related tools</h2>
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tool-card-name">describe_table</div>
+        <div class="tool-card-desc">Column types, primary keys, foreign keys, and a sample row from a specific table.</div>
+        <div class="tool-card-meta">↗ /tools/describe_table</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-name">exec_query</div>
+        <div class="tool-card-desc">Execute a read-only SQL query. Statement is sandboxed and rate-limited.</div>
+        <div class="tool-card-meta">↗ /tools/exec_query</div>
+      </div>
+    </div>
+
+    <h2>Response shape</h2>
+    <p>The tool returns a <code>list_tables.Result</code> structured object:</p>
+    <div class="response-block">
+      <div class="response-label">200 · application/json</div>
+    </div>
+  </main>
+
+  <aside class="rail">
+    <div class="rail-tabs">
+      <div class="rail-tab">cURL</div>
+      <div class="rail-tab active">Python</div>
+      <div class="rail-tab">TypeScript</div>
+      <div class="rail-tab">MCP CLI</div>
+    </div>
+    <div class="codeblock">
+      <div class="cb-head"><span class="lang"><span class="dot"></span>python · mcp-client</span><span style="cursor:pointer">⎘</span></div>
+<div class="cb-body"><pre><span class="hl-cmt"># pip install mcp-client</span>
+<span class="hl-key">from</span> mcp <span class="hl-key">import</span> Client
+
+<span class="hl-key">async with</span> Client(
+    <span class="hl-prop">transport</span>=<span class="hl-str">"sse"</span>,
+    <span class="hl-prop">endpoint</span>=<span class="hl-str">"https://mcp.linden.io"</span>,
+    <span class="hl-prop">api_key</span>=os.environ[<span class="hl-str">"LINDEN_KEY"</span>],
+) <span class="hl-key">as</span> mcp:
+    res = <span class="hl-key">await</span> mcp.call(
+        <span class="hl-str">"list_tables"</span>,
+        <span class="hl-prop">schema</span>=<span class="hl-str">"analytics"</span>,
+        <span class="hl-prop">min_rows</span>=<span class="hl-num">10</span>,
+        <span class="hl-prop">include_views</span>=<span class="hl-bool">True</span>,
+    )
+
+<span class="hl-key">for</span> t <span class="hl-key">in</span> res.tables:
+    print(t.name, t.row_count)</pre></div>
+    </div>
+
+    <div class="response-block">
+      <div class="response-label">Example response <span class="response-status rs-200">200 OK</span></div>
+      <div class="codeblock" style="margin-top:8px;">
+        <div class="cb-head"><span class="lang"><span class="dot" style="background:#22d3ee"></span>JSON</span></div>
+<div class="cb-body"><pre>{
+  <span class="hl-prop">"tables"</span>: [
+    {
+      <span class="hl-prop">"name"</span>: <span class="hl-str">"analytics.orders"</span>,
+      <span class="hl-prop">"kind"</span>:  <span class="hl-str">"table"</span>,
+      <span class="hl-prop">"row_count"</span>: <span class="hl-num">3284921</span>,
+      <span class="hl-prop">"comment"</span>: <span class="hl-str">"All orders, hourly ETL."</span>
+    },
+    {
+      <span class="hl-prop">"name"</span>: <span class="hl-str">"analytics.customers"</span>,
+      <span class="hl-prop">"kind"</span>:  <span class="hl-str">"table"</span>,
+      <span class="hl-prop">"row_count"</span>: <span class="hl-num">182304</span>,
+      <span class="hl-prop">"comment"</span>: <span class="hl-str">"PII-masked customer roster."</span>
+    },
+    {
+      <span class="hl-prop">"name"</span>: <span class="hl-str">"analytics.daily_kpis"</span>,
+      <span class="hl-prop">"kind"</span>:  <span class="hl-str">"view"</span>,
+      <span class="hl-prop">"row_count"</span>: <span class="hl-num">730</span>,
+      <span class="hl-prop">"comment"</span>: <span class="hl-str">"Yesterday's KPI rollup."</span>
+    }
+  ],
+  <span class="hl-prop">"truncated"</span>: <span class="hl-bool">false</span>
+}</pre></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+</body>
+</html>
