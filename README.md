@@ -67,7 +67,7 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 ## Run locally
 
 ```bash
-git clone https://github.com/phantomdev0826/linden-mcp
+git clone https://github.com/vltech55/linden-mcp
 cd linden-mcp
 cp .env.example .env       # add OPENAI_API_KEY for semantic search
 docker compose up -d --build
