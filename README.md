@@ -16,7 +16,7 @@
 
 ## What it does
 
-Linden is a production-grade [Model Context Protocol](https://modelcontextprotocol.io) server built on the official `mcp` Python SDK. It exposes **nine first-class tools across three families** — sandboxed Postgres queries, HTTP / GraphQL tools, and semantic search — plus MCP **resources** for browsable database tables and document collections.
+Linden is a production-grade [Model Context Protocol](https://modelcontextprotocol.io) server built on the official `mcp` Python SDK. It exposes **typed tools across SQL, semantic search, and HTTP** — a sandboxed Postgres query path, document search over pgvector, and a sample HTTP API integration — all with auto-generated JSON-Schemas from Pydantic types.
 
 The same server speaks stdio, HTTP, and SSE transports without code changes. Configuration examples for Claude Desktop, Cursor, and Zed ship in the repo.
 
@@ -24,9 +24,9 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 
 - **Pydantic-typed tools** — `@srv.tool` decorator infers a canonical JSON-Schema from your type hints. No hand-written tool definitions, no drift.
 - **SQL safely** — every query parsed and validated with `sqlglot` AST inspection: blocks DDL, enforces read-only role, injects `LIMIT`, hard timeouts.
-- **Six transports, one server** — stdio for desktop clients, HTTP + SSE for cloud agents, WebSockets, named pipes; configuration-only switch.
-- **Streaming + cancellation** — long-running tools stream progress back to the client; cancellation propagates cleanly.
-- **Built-in observability** — every call lands in an audit log with caller identity, latency, cost. OpenTelemetry traces ship to your existing pipeline.
+- **Two transports, one server** — stdio for local desktop clients, HTTP + SSE for remote / cloud agents; same async tool functions either way, no per-client code.
+- **Defense-in-depth SQL sandbox** — regex keyword ban → sqlglot AST validation (SELECT-only, no DDL, no CTE-wrapped writes) → LIMIT injection → read-only Postgres role with a 5 s statement timeout. Each layer is independent.
+- **Production hardening** — structured JSON logs with per-request correlation IDs, constant-time API-key comparison, token-bucket rate limiting on the HTTP transport.
 
 ## Screenshots
 
@@ -37,7 +37,7 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 </tr>
 <tr>
 <td><img src="docs/screenshots/reference.png"    alt="API reference — list_tables tool with args + response shape"></td>
-<td><img src="docs/screenshots/tools.png"        alt="Tools gallery — 9 tools across 7 categories"></td>
+<td><img src="docs/screenshots/tools.png"        alt="Tools gallery — typed tools across SQL, search, and HTTP"></td>
 </tr>
 <tr>
 <td><img src="docs/screenshots/integrations.png" alt="MCP client integrations — Claude Desktop, Cursor, Zed, Cline, Cody, Continue, VS Code"></td>
@@ -49,9 +49,9 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 
 | Family | Tool | Description |
 |--------|------|-------------|
-| Database | `list_tables` · `describe_table` · `exec_query` · `exec_mutation` | Sandboxed Postgres access: read-only role + LIMIT injection + sqlglot AST validation. |
-| HTTP / API | `fetch_url` · `graphql_query` · `webhook_dispatch` | Typed HTTP + GraphQL + signed webhooks with retry/backoff. |
-| Search | `semantic_search` · `fetch_pdf` | Vector search over a registered store + PDF text extraction (incl. arXiv IDs). |
+| Database | `sql_query` · `list_tables` | Sandboxed Postgres SELECT: regex ban + sqlglot AST validation + LIMIT injection + read-only role with 5 s statement timeout. |
+| Search | `search_documents` | OpenAI-embedded query against a pgvector HNSW index over documents (cosine, top-k). |
+| HTTP / API | `weather_current` · `weather_forecast` | Typed HTTP integration against Open-Meteo with tenacity retries — a reference example for adding more API tools. |
 
 ## Stack
 
@@ -61,7 +61,7 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 | Transport   | FastAPI (HTTP, SSE), official SDK (stdio) |
 | Validation  | Pydantic 2 → JSON-Schema, sqlglot AST for SQL |
 | Storage     | Postgres 16, pgvector, SQLAlchemy 2 + asyncpg, Alembic |
-| Observability | structlog, audit log table, OpenTelemetry-ready |
+| Observability | structlog JSON logs with per-request correlation IDs, response timing headers |
 | Ops         | Docker Compose, Tenacity retries, token-bucket rate limit |
 
 ## Run locally
@@ -102,20 +102,23 @@ See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) f
        │  Linden      │
        │  ─────────   │
        │  ┌────────┐  │     ┌──────────────────┐
-       │  │ tools  │──┼────▶│ sqlglot AST gate │──▶ Postgres (read-only role)
-       │  ├────────┤  │     └──────────────────┘
-       │  │resources│ │
-       │  ├────────┤  │     ┌──────────────────┐
-       │  │ prompts│  │────▶│ HTTP / GraphQL   │──▶ external APIs (signed)
+       │  │ sql_*  │──┼────▶│ 4-layer sandbox  │──▶ Postgres (mcp_readonly,
+       │  │ tools  │  │     │ regex → AST →    │   default_txn_read_only=on,
+       │  └────────┘  │     │ LIMIT → role     │   statement_timeout=5s)
+       │              │     └──────────────────┘
+       │  ┌────────┐  │     ┌──────────────────┐
+       │  │search_ │──┼────▶│ OpenAI embed +   │──▶ pgvector cosine
+       │  │docs    │  │     │ <=> distance     │   HNSW index
        │  └────────┘  │     └──────────────────┘
        │              │
        │  ┌────────┐  │     ┌──────────────────┐
-       │  │ audit  │──┼────▶│ Postgres audit   │
-       │  └────────┘  │     │ log (immutable)  │
-       └──────┬───────┘     └──────────────────┘
+       │  │weather_│──┼────▶│ httpx + tenacity │──▶ Open-Meteo
+       │  │* tools │  │     │ retries (3×, 1-8s)│
+       │  └────────┘  │     └──────────────────┘
+       └──────┬───────┘
               │
               ▼
-       OpenTelemetry traces
+       structlog JSON (request_id correlation)
 ```
 
 ## Tests
@@ -124,7 +127,7 @@ See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) f
 docker compose exec server pytest
 ```
 
-Covers sqlglot AST sanitisation, transport equivalence (stdio == HTTP == SSE), schema inference from Pydantic types, and audit-log immutability.
+Covers sqlglot AST sanitisation (rejects DDL/DML, blocks CTE-wrapped writes), LIMIT clamping, transport equivalence (stdio == HTTP == SSE), and schema inference from Pydantic types.
 
 ## License
 
