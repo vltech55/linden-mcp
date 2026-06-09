@@ -1,8 +1,8 @@
 <div align="center">
 
-# Linden — MCP Server for Database + API Tools
+# Linden
 
-**Typed MCP servers in one line of Python — sandboxed, observable, streaming. Drop-in for Claude Desktop, Cursor, Zed.**
+**Production-grade Model Context Protocol server. Typed tools across SQL, semantic search, and HTTP, with a four-layer SQL sandbox served over stdio and HTTP/SSE. Drop-in for Claude Desktop, Cursor, Zed.**
 
 ![Linden feature poster](docs/screenshots/feature.png)
 
@@ -14,16 +14,31 @@
 
 </div>
 
-## What it does
+---
 
-Linden is a production-grade [Model Context Protocol](https://modelcontextprotocol.io) server built on the official `mcp` Python SDK. It exposes **typed tools across SQL, semantic search, and HTTP** — a sandboxed Postgres query path, document search over pgvector, and a sample HTTP API integration — all with auto-generated JSON-Schemas from Pydantic types.
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Tools](#tools)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Architecture](#architecture)
+- [Testing](#testing)
+- [Author](#author)
+- [License](#license)
+
+## Overview
+
+Linden is a production-grade [Model Context Protocol](https://modelcontextprotocol.io) server built on the official `mcp` Python SDK. It exposes typed tools across SQL, semantic search, and HTTP — a sandboxed Postgres query path, document search over pgvector, and a sample HTTP API integration — all with auto-generated JSON-Schemas from Pydantic types.
 
 The same server speaks stdio, HTTP, and SSE transports without code changes. Configuration examples for Claude Desktop, Cursor, and Zed ship in the repo.
 
 ## Features
 
 - **Pydantic-typed tools** — `@srv.tool` decorator infers a canonical JSON-Schema from your type hints. No hand-written tool definitions, no drift.
-- **SQL safely** — every query parsed and validated with `sqlglot` AST inspection: blocks DDL, enforces read-only role, injects `LIMIT`, hard timeouts.
+- **Safe SQL execution** — every query parsed and validated with `sqlglot` AST inspection: blocks DDL, enforces read-only role, injects `LIMIT`, hard timeouts.
 - **Two transports, one server** — stdio for local desktop clients, HTTP + SSE for remote / cloud agents; same async tool functions either way, no per-client code.
 - **Defense-in-depth SQL sandbox** — regex keyword ban → sqlglot AST validation (SELECT-only, no DDL, no CTE-wrapped writes) → LIMIT injection → read-only Postgres role with a 5 s statement timeout. Each layer is independent.
 - **Production hardening** — structured JSON logs with per-request correlation IDs, constant-time API-key comparison, token-bucket rate limiting on the HTTP transport.
@@ -45,7 +60,7 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 </tr>
 </table>
 
-## Tools shipped
+## Tools
 
 | Family | Tool | Description |
 |--------|------|-------------|
@@ -53,21 +68,21 @@ The same server speaks stdio, HTTP, and SSE transports without code changes. Con
 | Search | `search_documents` | OpenAI-embedded query against a pgvector HNSW index over documents (cosine, top-k). |
 | HTTP / API | `weather_current` · `weather_forecast` | Typed HTTP integration against Open-Meteo with tenacity retries — a reference example for adding more API tools. |
 
-## Stack
+## Tech Stack
 
-| Layer       | Tech |
-|-------------|------|
-| Protocol    | `mcp` Python SDK ≥ 1.1 (tools + resources) |
-| Transport   | FastAPI (HTTP, SSE), official SDK (stdio) |
-| Validation  | Pydantic 2 → JSON-Schema, sqlglot AST for SQL |
-| Storage     | Postgres 16, pgvector, SQLAlchemy 2 + asyncpg, Alembic |
+| Layer         | Technology |
+|---------------|------------|
+| Protocol      | `mcp` Python SDK ≥ 1.1 (tools + resources) |
+| Transport     | FastAPI (HTTP, SSE), official SDK (stdio) |
+| Validation    | Pydantic 2 → JSON-Schema, sqlglot AST for SQL |
+| Storage       | Postgres 16, pgvector, SQLAlchemy 2 + asyncpg, Alembic |
 | Observability | structlog JSON logs with per-request correlation IDs, response timing headers |
-| Ops         | Docker Compose, Tenacity retries, token-bucket rate limit |
+| Operations    | Docker Compose, Tenacity retries, token-bucket rate limit |
 
-## Run locally
+## Installation
 
 ```bash
-git clone https://github.com/vltech55/linden-mcp
+git clone https://github.com/vltech55/linden-mcp.git
 cd linden-mcp
 cp .env.example .env       # add OPENAI_API_KEY for semantic search
 docker compose up -d --build
@@ -121,7 +136,7 @@ See [`claude_desktop_config.example.json`](claude_desktop_config.example.json) f
        structlog JSON (request_id correlation)
 ```
 
-## Tests
+## Testing
 
 ```bash
 docker compose exec server pytest
@@ -129,6 +144,12 @@ docker compose exec server pytest
 
 Covers sqlglot AST sanitisation (rejects DDL/DML, blocks CTE-wrapped writes), LIMIT clamping, transport equivalence (stdio == HTTP == SSE), and schema inference from Pydantic types.
 
+## Author
+
+**Vlad L.** — independent senior engineer specializing in production-grade LLM systems (RAG, agents, gateways, multi-tenant SaaS).
+
+[![GitHub](https://img.shields.io/badge/GitHub-vltech55-181717?logo=github)](https://github.com/vltech55)
+
 ## License
 
-MIT
+[MIT](LICENSE) © Vlad L.
